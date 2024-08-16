@@ -5,8 +5,8 @@ const axios = require('axios');
 puppeteer.use(StealthPlugin());
 
 const items = [
-  { url: 'https://www.historyreborn.net/?module=item&action=view&id=27262', valorMedio: 60000 },
-  { url: 'https://www.historyreborn.net/?module=item&action=view&id=420199', valorMedio: 350000 },
+  { url: 'https://www.historyreborn.net/?module=item&action=view&id=27262', valorMedio: 100000, nome: 'Carta Atria' },
+  { url: 'https://www.historyreborn.net/?module=item&action=view&id=420199', valorMedio: 5000000, nome: 'Ghost Fire' },
 ];
 
 // Substitua pelo URL do webhook que você criou no Discord
@@ -33,13 +33,13 @@ function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Função para enviar a notificação para o Discord com a imagem
+// Função para enviar a notificação para o Discord com a imagem e o nome do item
 async function sendDiscordNotification(item, loja, valor, imageUrl) {
   const message = {
     content: `🟢 O item foi encontrado com valor menor que o valor médio! @here\n**Item:** ${item.url}\n**Loja:** ${loja}\n**Valor:** ${valor}c`,
     embeds: [
       {
-        title: 'Imagem do Item',
+        title: item.nome,  // Aqui incluímos o nome do item no título do embed
         image: {
           url: imageUrl, // Adiciona a URL da imagem no embed do Discord
         },
