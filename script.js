@@ -5,8 +5,8 @@ const axios = require('axios');
 puppeteer.use(StealthPlugin());
 
 const items = [
-  { url: 'https://www.historyreborn.net/?module=item&action=view&id=27262', valorMedio: 100000, nome: 'Carta Atria' },
-  { url: 'https://www.historyreborn.net/?module=item&action=view&id=420199', valorMedio: 5000000, nome: 'Ghost Fire' },
+  { url: 'https://www.historyreborn.net/?module=item&action=view&id=27262', valorMedio: 60000, nome: 'Carta Atria' },
+  { url: 'https://www.historyreborn.net/?module=item&action=view&id=420199', valorMedio: 450000, nome: 'Ghost Fire' },
 ];
 
 // Substitua pelo URL do webhook que você criou no Discord
