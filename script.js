@@ -1,31 +1,42 @@
 const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
-const axios = require('axios');
+const { Client, GatewayIntentBits } = require('discord.js');
+
+// Configuração do Discord.js
+const client = new Client({ 
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.DirectMessages]});
+const discordToken = 'MTI3NDY3MzUyMjI2NTk0ODE3MA.GKgkL3.N915n2P7-ak3OCMPj873qLAehRrAecuWN5-rl0'; // Substitua pelo token do seu bot
+const userId = '178921387698683904'; // Substitua pelo ID do usuário que receberá as mensagens
 
 puppeteer.use(StealthPlugin());
 
 const items = [
   { url: 'https://www.historyreborn.net/?module=item&action=view&id=27262', valorMedio: 60000, nome: 'Carta Atria' },
   { url: 'https://www.historyreborn.net/?module=item&action=view&id=420199', valorMedio: 450000, nome: 'Ghost Fire' },
+  { url: 'https://www.historyreborn.net/?module=item&action=view&id=540048', valorMedio: 70000, nome: 'One Sky One Sun-LT' },
+  { url: 'https://www.historyreborn.net/?module=item&action=view&id=490243', valorMedio: 40001, nome: 'Ring of Silver Claw' },
+  // Outros itens...
 ];
-
-// Substitua pelo URL do webhook que você criou no Discord
-const discordWebhookUrl = 'https://discord.com/api/webhooks/1274046922117873715/JlqoiBbCyoGduv9Xy1E-gQR689FGAj9Bm2IQzD9tAvnOner2hTnh9A64EuJCl9iXSfGS';
 
 // Função para converter valores abreviados, como "k" e "M"
 function convertAbbreviatedValue(valueStr) {
-  let value = valueStr.toLowerCase().replace(/[^\dkm]/g, ''); // Remove tudo que não seja dígitos, 'k' ou 'm'
+  let value = valueStr.toLowerCase().replace(/[^\dkm,.]/g, ''); 
+
+  let numericValue;
   if (value.includes('m')) {
-    return parseFloat(value.replace('m', '')) * 1000000;
+    numericValue = parseFloat(value.replace('m', '').replace(',', '')) * 1000000;
   } else if (value.includes('k')) {
-    return parseFloat(value.replace('k', '')) * 1000;
+    numericValue = parseFloat(value.replace('k', '').replace(',', '')) * 1000;
+  } else {
+    numericValue = parseFloat(value.replace(/[,.]/g, '')); 
   }
-  return parseFloat(value); // Valor sem abreviação
+  
+  return numericValue;
 }
 
 // Função para formatar valores com vírgulas (exemplo: 1,000,000)
 function formatWithCommas(value) {
-  return value.toLocaleString('en-US'); // Formata o número com vírgulas
+  return value.toLocaleString('en-US');
 }
 
 // Função para adicionar um atraso (em milissegundos)
@@ -33,62 +44,51 @@ function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Função para enviar a notificação para o Discord com a imagem e o nome do item
-async function sendDiscordNotification(item, loja, valor, imageUrl) {
-  const message = {
-    content: `🟢 O item foi encontrado com valor menor que o valor médio! @here\n**Item:** ${item.url}\n**Loja:** ${loja}\n**Valor:** ${valor}c`,
-    embeds: [
-      {
-        title: item.nome,  // Aqui incluímos o nome do item no título do embed
-        image: {
-          url: imageUrl, // Adiciona a URL da imagem no embed do Discord
-        },
-      },
-    ],
-  };
-
+// Função para enviar a notificação para o usuário no Discord
+async function sendDiscordNotification(item, loja, valor, imageUrl, itemUrl) {
   try {
-    await axios.post(discordWebhookUrl, message);
-    console.log('Notificação enviada para o Discord com sucesso!');
+    const user = await client.users.fetch(userId); // Obtém o usuário pelo ID
+    const message = `🟢 O item foi encontrado com valor menor que o valor médio!\n**Item:** ${item.nome}\n**Loja:** ${loja}\n**Valor:** ${valor}c\n[Link para a loja](${itemUrl})`; // Inclui o link da loja
+
+    // Envia a mensagem privada ao usuário
+    await user.send({
+      content: message,
+      embeds: [
+        {
+          title: item.nome,  
+          image: { url: imageUrl }, 
+        },
+      ],
+    });
+    console.log('Notificação enviada para o usuário com sucesso!');
   } catch (error) {
-    if (error.response && error.response.status === 429) {
-      console.error('Erro ao enviar notificação para o Discord: Too Many Requests (429). Aguardando para reenviar...');
-      const retryAfter = error.response.headers['retry-after'] || 1000; // Usar o valor de 'retry-after' se disponível, caso contrário, aguardar 1 segundo
-      await delay(retryAfter); // Adiciona um atraso antes de tentar novamente
-      await sendDiscordNotification(item, loja, valor, imageUrl); // Tentar enviar novamente após o atraso
-    } else {
-      console.error('Erro ao enviar notificação para o Discord:', error.message);
-    }
+    console.error('Erro ao enviar notificação para o usuário:', error.message);
   }
 }
 
 // Função principal que executa o scraping usando Puppeteer
-async function scrapeItem(item) {
+async function scrapeItem(item, browser) {
   const { url, valorMedio } = item;
 
   try {
-    const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
-
     await page.goto(url, { waitUntil: 'networkidle2' });
 
     console.log(`\nAnalisando item na URL: ${url}`);
     console.log(`Valor médio definido para este item: ${formatWithCommas(valorMedio)}c`);
 
-    // Extraindo diretamente as linhas da tabela usando o Puppeteer
     const vendas = await page.evaluate(() => {
       const linhas = Array.from(document.querySelectorAll('#nova-sale-table tbody tr'));
       return linhas.map((linha) => {
         const loja = linha.querySelector('td').innerText.trim();
-        const valorStr = linha.querySelectorAll('td')[3]?.innerText.trim(); // Valor do item, com verificação de segurança
+        const valorStr = linha.querySelectorAll('td')[3]?.innerText.trim();
         return { loja, valorStr };
       });
     });
 
-    // Extraindo a imagem contida no div.novacard-box
     const imageUrl = await page.evaluate(() => {
       const imgElement = document.querySelector('div.novacard-box img');
-      return imgElement ? imgElement.src : null; // Retorna a URL da imagem ou null se não for encontrada
+      return imgElement ? imgElement.src : null; 
     });
 
     if (imageUrl) {
@@ -97,54 +97,51 @@ async function scrapeItem(item) {
       console.log('Nenhuma imagem encontrada no div.novacard-box.');
     }
 
-    // Verifica se há vendas disponíveis
     if (vendas.length === 0) {
       console.log("Nenhuma venda encontrada.");
     } else {
-      // Processa cada venda
       for (const venda of vendas) {
-        if (!venda.valorStr || isNaN(convertAbbreviatedValue(venda.valorStr))) {
-          console.log(`Loja: ${venda.loja} - Valor inválido: ${venda.valorStr}`);
-        } else {
-          const valor = convertAbbreviatedValue(venda.valorStr); // Converte o valor formatado
+        if (venda.loja.toLowerCase().includes("moeda de rmt")) {
+          console.log(`Loja ignorada: ${venda.loja} - Vendendo por Moeda de RMT`);
+          continue;
+        }
 
-          // Verifica se o valor é menor que o valor médio
-          if (valor < valorMedio) {
-            console.log(`Loja: ${venda.loja} - Valor: ${formatWithCommas(valor)}c (abaixo do valor médio de ${formatWithCommas(valorMedio)}c)`);
-            // Enviar notificação para o Discord com um atraso entre requisições
-            await sendDiscordNotification(item, venda.loja, formatWithCommas(valor), imageUrl);
-            await delay(2000); // Adiciona um atraso de 2 segundos entre cada notificação
-          } else {
-            console.log(`Loja: ${venda.loja} - Valor: ${formatWithCommas(valor)}c (acima do valor médio)`);
-          }
+        const valor = convertAbbreviatedValue(venda.valorStr); 
+
+        if (!isNaN(valor) && valor < valorMedio) {
+          console.log(`Loja: ${venda.loja} - Valor: ${formatWithCommas(valor)}c (abaixo do valor médio de ${formatWithCommas(valorMedio)}c)`);
+          await sendDiscordNotification(item, venda.loja, formatWithCommas(valor), imageUrl, url); 
+          await delay(2000); 
+        } else {
+          console.log(`Loja: ${venda.loja} - Valor: ${formatWithCommas(valor)}c (acima do valor médio)`);
         }
       }
     }
 
-    await browser.close();
+    await page.close();
   } catch (error) {
     console.error(`Erro ao acessar a URL: ${url}`, error.message);
   }
 }
 
-// Função para processar todos os itens
+// Função que processa todos os itens de forma paralela
 async function processarItens() {
-  for (const item of items) {
-    await scrapeItem(item);
-  }
+  const browser = await puppeteer.launch({ headless: true }); 
+  await Promise.all(items.map(item => scrapeItem(item, browser))); 
+  await browser.close(); 
 }
 
-// Função para iniciar o scraping a cada 2 minutos
 function iniciarScraping() {
-  // Chama a função para processar os itens imediatamente
   processarItens();
-
-  // Define o intervalo para repetir o scraping a cada 2 minutos (120000ms)
   setInterval(() => {
     console.log('Executando o scraping novamente...');
     processarItens();
-  }, 120000); // Intervalo em milissegundos (2 minutos = 120000ms)
+  }, 120000); 
 }
 
-// Chama a função para iniciar o scraping contínuo
-iniciarScraping();
+client.once('ready', () => {
+  console.log('Bot pronto e conectado!');
+  iniciarScraping();
+});
+
+client.login(discordToken);
