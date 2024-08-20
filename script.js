@@ -5,17 +5,50 @@ const { Client, GatewayIntentBits } = require('discord.js');
 // Configuração do Discord.js
 const client = new Client({ 
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.DirectMessages]});
-const discordToken = ''; // Substitua pelo token do seu bot
-const userId = ''; // Substitua pelo ID do usuário que receberá as mensagens
+const discordToken = 'MTI3NDY3MzUyMjI2NTk0ODE3MA.GKgkL3.N915n2P7-ak3OCMPj873qLAehRrAecuWN5-rl0'; // Substitua pelo token do seu bot
+const userId = '178921387698683904'; // Substitua pelo ID do usuário que receberá as mensagens
 
 puppeteer.use(StealthPlugin());
 
+const BASE_URL = 'https://www.historyreborn.net/?module=item&action=view&id=';
+
 const items = [
-  { url: 'https://www.historyreborn.net/?module=item&action=view&id=27262', valorMedio: 60000, nome: 'Carta Atria' },
-  { url: 'https://www.historyreborn.net/?module=item&action=view&id=420199', valorMedio: 450000, nome: 'Ghost Fire' },
-  { url: 'https://www.historyreborn.net/?module=item&action=view&id=540048', valorMedio: 70000, nome: 'One Sky One Sun-LT' },
-  { url: 'https://www.historyreborn.net/?module=item&action=view&id=490243', valorMedio: 40001, nome: 'Ring of Silver Claw' },
-  // Outros itens...
+  { url: BASE_URL + '27262', valorMedio: 60000, nome: 'Carta Atria' },
+  { url: BASE_URL + '420199', valorMedio: 450000, nome: 'Ghost Fire' },
+  { url: BASE_URL + '540048', valorMedio: 70000, nome: 'One Sky One Sun-LT' },
+  { url: BASE_URL + '490243', valorMedio: 40001, nome: 'Ring of Silver Claw' }, //muito disputado
+  { url: BASE_URL + '300218', valorMedio: 2000, nome: 'Ashhopper Card' },
+  { url: BASE_URL + '29509', valorMedio: 700000, nome: 'Hero' },
+  { url: BASE_URL + '312475', valorMedio: 1000000, nome: 'Fury' },
+  { url: BASE_URL + '29436', valorMedio: 2000000, nome: 'Dynast' },
+  { url: BASE_URL + '17043', valorMedio: 4000, nome: 'Cx Perg Efeito: Golem' },
+  { url: BASE_URL + '470254', valorMedio: 70000, nome: 'Calçados de Zen Ichinyo' },//valor zoado (valor adicionado do item +0)
+  { url: BASE_URL + '490290', valorMedio: 300000, nome: 'Ameretat' }, //depende do enchant
+  { url: BASE_URL + '490207', valorMedio: 4000000, nome: 'Memento Mori' }, //unica venda a 4.5kk
+  { url: BASE_URL + '4496', valorMedio: 1800000, nome: 'Carta Drake Selada' },
+  { url: BASE_URL + '540056', valorMedio: 600000, nome: 'Dim Glacier Book' },
+  { url: BASE_URL + '27125', valorMedio: 4000, nome: 'Carta Mula Sem Cabeça' },
+  { url: BASE_URL + '4658', valorMedio: 2500, nome: 'Carta Verit Pesadelo' },
+  { url: BASE_URL + '33362', valorMedio: 20000, nome: 'Mini-Refinadora' },
+  { url: BASE_URL + '33360', valorMedio: 140000, nome: 'Refinadora Complexa' },
+  { url: BASE_URL + '24667', valorMedio: 140000, nome: 'Armadura Da Tormenta' },
+  { url: BASE_URL + '410176', valorMedio: 55000, nome: 'Fones de Ouvido da Bruxa' },
+  { url: BASE_URL + '24666', valorMedio: 140000, nome: 'Sapatos Sombrios da Tormenta' },
+  { url: BASE_URL + '410216', valorMedio: 105000, nome: 'Orelhas do Abismo' },
+  { url: BASE_URL + '410130', valorMedio: 110000, nome: 'Orelhas Fantasmagóricas' },
+  { url: BASE_URL + '4486', valorMedio: 25000, nome: 'Carta Belzebu Selada' },
+  { url: BASE_URL + '4498', valorMedio: 10000, nome: 'Carta Lady Tanee Selada' },
+  { url: BASE_URL + '4624', valorMedio: 45000, nome: 'Carta Tao Gunka Selada ' },
+  { url: BASE_URL + '4538', valorMedio: 4000, nome: 'Sealed White Lady Card' },
+  { url: BASE_URL + '27211', valorMedio: 5000, nome: 'Sealed Baphomet Card' },
+  { url: BASE_URL + '4490', valorMedio: 1000, nome: 'Sealed Moonlight Flower Card' },
+  { url: BASE_URL + '4578', valorMedio: 6000, nome: 'Carta Pyuriel Furiosa' },
+  { url: BASE_URL + '27221', valorMedio: 35000, nome: 'Sealed Gioia Card' },
+  { url: BASE_URL + '480198', valorMedio: 20000, nome: 'Asas de Louro' },
+  { url: BASE_URL + '4480', valorMedio: 35000, nome: '' },
+  { url: BASE_URL + '4480', valorMedio: 35000, nome: '' },
+  
+
 ];
 
 // Função para converter valores abreviados, como "k" e "M"
