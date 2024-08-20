@@ -45,8 +45,8 @@ const items = [
   { url: BASE_URL + '4578', valorMedio: 6000, nome: 'Carta Pyuriel Furiosa' },
   { url: BASE_URL + '27221', valorMedio: 35000, nome: 'Sealed Gioia Card' },
   { url: BASE_URL + '480198', valorMedio: 20000, nome: 'Asas de Louro' },
-  { url: BASE_URL + '4480', valorMedio: 35000, nome: '' },
-  { url: BASE_URL + '4480', valorMedio: 35000, nome: '' },
+  { url: BASE_URL + '38075', valorMedio: 3, nome: '[Hard] Moeda de Cheffênia' },
+  { url: BASE_URL + '38071', valorMedio: 3, nome: '[Hard] Cristal de Bio 5' },
   
 
 ];
