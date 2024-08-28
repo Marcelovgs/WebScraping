@@ -123,10 +123,18 @@ function delay(ms) {
 async function sendDiscordNotification(item, loja, valor, imageUrl, itemUrl) {
   try {
     const user = await client.users.fetch(userId);
-    const message = `🟢 O item foi encontrado com valor menor ou igual ao valor médio!\n**Item:** ${item.nome}\n**ID do Item:** ${item.id}\n**Loja:** ${loja}\n**Valor:** ${valor}c\n[Link para a loja](${itemUrl})`;
+    const formatMessage = (item, loja, valor, url) => `
+      🟢 O item foi encontrado com valor menor ou igual ao valor médio!
+      **Item:** ${item.nome}
+      **ID do Item:** ${item.id}
+      **Loja:** ${loja}
+      **Valor:** ${valor}c
+      [Link para a loja](${url})
+    `;
 
+    // Envie a mensagem ao usuário no Discord
     await user.send({
-      content: message,
+      content: formatMessage(item, loja, valor, itemUrl),
       embeds: [
         {
           title: item.nome,
@@ -134,12 +142,12 @@ async function sendDiscordNotification(item, loja, valor, imageUrl, itemUrl) {
         },
       ],
     });
+
     console.log('Notificação enviada para o usuário com sucesso!');
   } catch (error) {
     console.error('Erro ao enviar notificação para o usuário:', error.message);
   }
 }
-
 
 // Função principal que executa o scraping usando Puppeteer
 async function scrapeItem(item, browser) {
