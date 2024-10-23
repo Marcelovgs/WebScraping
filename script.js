@@ -5,8 +5,8 @@ const { Client, GatewayIntentBits } = require('discord.js');
 // Configuração do Discord.js
 const client = new Client({ 
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.DirectMessages]});
-const discordToken = 'MTI3NDY3MzUyMjI2NTk0ODE3MA.GwQqZh.AjCuzfuvDUvgWZnIQR5pTP1dW51OdDCKxZrYwg'; // Substitua pelo token do seu bot
-const userId = '178921387698683904'; // Substitua pelo ID do usuário que receberá as mensagens
+const discordToken = ''; // Substitua pelo token do seu bot
+const userId = ''; // Substitua pelo ID do usuário que receberá as mensagens
 
 puppeteer.use(StealthPlugin());
 
